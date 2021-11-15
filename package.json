@@ -1,7 +1,7 @@
 {
   "name": "12-sql-employee-tracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "HTML, CSS, Javascript, Node.js, Inquirer",
   "main": "index.js",
   "dependencies": {
     "console.table": "^0.10.0",
