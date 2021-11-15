@@ -2,29 +2,23 @@
 
 ## Project Description:
 
-This week's assignment required that I build an application using Inquirer to collect data and Jest to run tests. Ultimately the application needed to be able to accept information from a user in order to build a collection of profiles for all of their team members. These team members needed to be organized by class (Manager, Engineer and Intern) with an employee parent class above them all. Each child class accepted information from employee and added elements specific to that type of worker.
-
 ## Technologies Used:
 
-HTML, CSS, Javascript, Node.js, Inquirer, Jest and Path
+HTML, CSS, Javascript, Node.js, Inquirer
 
 ## Link to application on Github:
 
-https://github.com/micah41224/10-Team-Profile-Generator
+https://github.com/micah41224/12-SQL-Employee-Tracker
 
 ## Link to demonstration video:
 
 ### Screencastify Link:
 
-https://watch.screencastify.com/v/uKiLfD8APGRnqUs3WFq5
-
 ### Google Drive Link:
-
-https://drive.google.com/file/d/1cZSMiM_JWaSDbs4q-SVihFdiD0f7WIFY/view
 
 ## Screenshot of final page:
 
-![Completed Application Page](/assets/Team-Profile-Generator-Final-SS.png)
+![Completed Application Page](/assets/images/)
 
 ## License:
 
