@@ -36,17 +36,49 @@ function manageCompany () {
   inquirer
   .prompt([
     {
-      type: 'list',
-      message: 'What would you like to do?',
-      name: 'mainMenu',
+      type: "list",
+      message: "Please select a task",
+      name: "mainMenu",
       choices: [
-          'View All Departments', 
-          'View all Roles', 
-          'View All Employees', 
-          'Add a Department', 
-          'Add a Role', 
-          'Add an Employee', 
-          'Update an Employee Role', 
-          'Exit' 
-        ]}
-]);}
+          "View All Departments", 
+          "View all Roles", 
+          "View All Employees", 
+          "Add a Department", 
+          "Add a Role", 
+          "Add an Employee", 
+          "Update an Employee Role", 
+          "Exit" 
+        ],
+    }
+]).then(userSelection => {
+    switch (userSelection.action) {
+                case "View all departments":
+                    viewAllDepartments();
+                    break;
+                case "View all roles":
+                    viewAllRoles();
+                    break;
+                case "View all employees":
+                    viewAllEmployees();
+                    break;
+                case "Add a department":
+                    addDepartment();
+                    break;
+                case "Add a role":
+                    addRole();
+                    break;
+                case "Add an employee":
+                    addEmployee();
+                    break;
+                case "Update an employee role":
+                    updateEmployeeRole();
+                    break;
+                case "Quit":
+                    console.log("Deactivating Employee Tracker.");
+                    break;
+                default:
+                    console.log("Error occured with user selection.");
+                    break;
+}
+})
+;}
