@@ -29,7 +29,7 @@ db_create.connect((err) => {
 // Insert main function
 });
 
-function manageCompany () {
+function manageDB () {
   inquirer
   .prompt([
     {
@@ -81,7 +81,7 @@ function manageCompany () {
 ;};
 
 function viewAllDepartments() {
-    db.query(`SELECT * FROM departments`, (err, rows) => {
+    db.query(`ENTER CODE HERE`, (err, rows) => {
         if (err) {
           console.error(err);
           return;
