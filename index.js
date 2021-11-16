@@ -10,9 +10,6 @@ const app = express();
 
 const PORT = process.env.PORT || 3306;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
 var db_create = mysql.createConnection({
     host: process.env.DB_HOST,
     port: PORT,
@@ -81,4 +78,15 @@ function manageCompany () {
                     break;
 }
 })
-;}
+;};
+
+function viewAllDepartments() {
+    db.query(`SELECT * FROM departments`, (err, rows) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.table('\n', rows.slice(0));
+        init();
+      });
+}
