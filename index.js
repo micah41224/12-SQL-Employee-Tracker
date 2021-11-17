@@ -29,7 +29,7 @@ db_create.connect((err) => {
 // Insert main function
 });
 
-function manageDB () {
+function startUp () {
   inquirer.prompt([
     {
       type: "list",
