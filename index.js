@@ -81,12 +81,14 @@ function manageDB () {
 ;};
 
 function viewAllDepartments() {
-    db.query(`ENTER CODE HERE`, (err, rows) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
+    db.query('SELECT * FROM department_table', (rows) => {
         console.table('\n', rows.slice(0));
         init();
       });
 }
+
+function viewAllRoles() {
+    db.query('')
+}
+
+
