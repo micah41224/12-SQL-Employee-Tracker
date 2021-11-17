@@ -153,8 +153,58 @@ function addRole() {
 }
 
 
-function addEmployee() {
-    db.query(``)
+async function addEmployee() {
+    
+    const managerList = await retrieveManagers();
+    const choicesManagerList = managerList[0].map(({ manager_name }) => ({ name: manager_name}));
+    const departmentList = await retrieveDepartments();
+    const choicesDepartmentList = departmentList[0].map(({ department_name }) => ({ name: department_name}));
+    const roleList = await retrieveRoles();    
+    const choicesRoleList = roleList[0].map(({ title }) => ({ name: title}));
+        
+    const userInput = await inquirer
+    .prompt([
+        {
+            type: "input",
+            name: "firstName",
+            message: "What is the first name of the employee?",
+        },
+        {
+            type: "input",
+            name: "lastName",
+            message: "What is the last name of the employee?",
+        },
+        {
+            type: "list",
+            name: "title",
+            message: "What is the title of the employee?",
+            choices: choicesRoleList,
+        },
+        {
+            type: "list",
+            name: "departmentName",
+            message: "Which department should the employee belong to?",
+            choices: choicesDepartmentList,
+        },        
+        {
+            type: "list",
+            name: "managerName",
+            message: "Which manager should the employee be assigned?",
+            choices: choicesManagerList,
+        },
+    ]);
+
+    db.query(`SELECT id FROM roles WHERE title = ('${userInput.title}')`, (result) => {
+        const roleId = result[0].id;
+        
+        db.query(`SELECT id FROM employees WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
+            const managerId = result[0].id;  
+            db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
+                console.log(`Added '${userInput.firstName}' '${userInput.lastName}' to the database`);
+                startUp();
+            });
+        });        
+    });
 }
 
 function retrieveManagers() {
@@ -174,3 +224,12 @@ function retrieveRoles() {
 }
 
 startUp();
+
+
+
+
+
+
+
+
+
