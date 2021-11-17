@@ -111,6 +111,7 @@ function addDepartment() {
     ]).then(userInput => {
         db.query(`INSERT INTO department_table(department_name) VALUES("${userInput.department_name}")`), (result) => {
             console.log(`"${userInput.department_name}" was added to the database`);
+            startUp();
         }
     })
     
@@ -119,9 +120,8 @@ function addDepartment() {
 
 function addRole() {
 
-    // getDepartments().then( ([rows, fields]) => {
-        
-    //     const departmentList = rows.map(({ id, department_name }) => ({ name: department_name}));
+    getDepartments().then( ([rows, fields]) => {
+         const dptList = rows.map(({ id, department_name }) => ({ name: department_name}));
     
     inquirer.prompt([
         {
@@ -138,15 +138,20 @@ function addRole() {
             name:"departmentName",
             type:"list",
             message:"What department does this role fall under?",
-            choices: departmentList,
+            choices: dptList,
         }
     ]).then(userInput => {
         db.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
-            
-        }
-    })
-    
+            const departmentId =result[0].id;
+            db.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
+                console.log(`'${userInput.roleName}' has been added to the database`);
+                startUp();
+               });
+            };            
+        });        
+    })    
 }
+
 
 function addEmployee() {
     db.query(``)
