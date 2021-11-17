@@ -91,4 +91,18 @@ function viewAllRoles() {
     db.query('')
 }
 
+function viewAllEmployees() {
+    db.query('')
+}
 
+function addDepartment() {
+    db.query('')
+}
+
+function addRole() {
+    db.query('')
+}
+
+function addEmployee() {
+    db.query('')
+}
