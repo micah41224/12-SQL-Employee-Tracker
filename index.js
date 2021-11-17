@@ -88,7 +88,10 @@ function viewAllDepartments() {
 }
 
 function viewAllRoles() {
-    db.query('')
+    db.query('SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name AS ', (rows) => {
+        console.table('\n', rows.slice(0));
+        init();
+    });
 }
 
 function viewAllEmployees() {
