@@ -88,14 +88,15 @@ function viewAllDepartments() {
 }
 
 function viewAllRoles() {
-    db.query('SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name AS ', (rows) => {
+    // Combined w3schools examples to frame this, needs checking
+    db.query('SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM roles JOIN department_table ON department_table.id = roles.department_id', (rows) => {
         console.table('\n', rows.slice(0));
         init();
     });
 }
 
 function viewAllEmployees() {
-    db.query('')
+    db.query('SELECT employee_table.id, employee_table.first_name, employee_table.last_name, employee_table.role_id')
 }
 
 function addDepartment() {
