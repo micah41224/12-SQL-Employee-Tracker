@@ -1,16 +1,12 @@
 // require('dotenv').config();
 // const dotEnv = require("dotenv").config();
 const mysql = require("mysql2");
-const CT =require("console.table");
+const consoleTable =require("console.table");
 const inquirer = require("inquirer");
-const express = require("express");
+
 
 const PORT = process.env.PORT || 3306;
 
-const app = express();
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 // var db_create = mysql.createConnection({
 //     host: process.env.DB_HOST,
@@ -20,12 +16,13 @@ app.use(express.json());
 //     database: process.env.DB_DATABASE
 // },
 
-var db_create = mysql.createConnection({
+const db_create = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
     password: "mysql5200",
-    database: "employee_db"
+    database: "employee_db",
+    connectTimeout: 300000
 },
 
 console.log("It worked")
@@ -36,87 +33,79 @@ db_create.connect((err) => {
          throw err;
     }
     console.log('Mysql Connected');
-});
-
-// look at this
-
-app.use((req, res) => {
-    res.status(404).end();
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    startUp();
 });
 
 
-// end look at this
-
-function startUp () {
+function startUp(db_create) {
   inquirer.prompt([
     {
-      type: "list",
-      message: "Please select a task",
-      name: "mainmenu",
+      type: 'list',
+      message: 'Please select a task',
+      name: 'options',
       choices: [
-          "View all Departments", 
-          "View all Roles", 
-          "View all Employees", 
-          "Add a Department", 
-          "Add a Role", 
-          "Add an Employee", 
-          "Update an Employee Role", 
-          "Exit" 
+          'View all departments', 
+          'View all roles', 
+          'View all employees', 
+          'Add a department', 
+          'Add a role', 
+          'Add an employee', 
+          'Update an employee role', 
+          'Exit' 
         ]
     }
-]).then(userSelection => {
-    switch (userSelection.mainmenu) {
-                case "View all departments":
+]).then(function (data) {
+    switch (data.options) {
+                case ('View all departments'):
                     viewAllDepartments();
                     break;
-                case "View all roles":
+                case 'View all roles':
                     viewAllRoles();
                     break;
-                case "View all employees":
+                case 'View all employees':
                     viewAllEmployees();
                     break;
-                case "Add a department":
+                case 'Add a department':
                     addDepartment();
                     break;
-                case "Add a role":
+                case 'Add a role':
                     addRole();
                     break;
-                case "Add an employee":
+                case 'Add an employee':
                     addEmployee();
                     break;
-                case "Update an employee role":
+                case 'Update an employee role':
                     updateEmployeeRole();
                     break;
-                case "Quit":
-                    console.log("Deactivating Employee Tracker.");
+                case "Exit":
+                    console.log('Deactivating Employee Tracker.');
                     break;
                 default:
-                    console.log("Error occured with user selection.");
+                    console.log(data+'/n'+'Error occured with user selection.');
                     break;
 }
 });
 };
 
 function viewAllDepartments() {
-    db.query(`SELECT * FROM department_table`, (rows) => {
-        console.table('\n', rows.slice(0));
+    db_create.query("SELECT * FROM department_table", 
+    function (err, res) {
+        if (err) throw err;
+        console.table(res);
         startUp();
       });
 }
 
+
 function viewAllRoles() {
-    db.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM roles JOIN department_table ON department_table.id = roles.department_id`, (rows) => {
+    db_create.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM roles JOIN department_table ON department_table.id = roles.department_id`, (rows) => {
         console.table('\n', rows.slice(0));
         startUp();
     });
 }
 
 function viewAllEmployees() {
-    db.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`), (rows) => {
+    db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`), (rows) => {
         console.table('\n', rows.slice(0));
         startUp();
     }
@@ -130,7 +119,7 @@ function addDepartment() {
             message:"What is the department name?"
         }
     ]).then(userInput => {
-        db.query(`INSERT INTO department_table(department_name) VALUES("${userInput.department_name}")`), (result) => {
+        db_create.query(`INSERT INTO department_table(department_name) VALUES("${userInput.department_name}")`), (result) => {
             console.log(`"${userInput.department_name}" was added to the database`);
             startUp();
         }
@@ -162,9 +151,9 @@ function addRole() {
             choices: dptList,
         }
     ]).then(userInput => {
-        db.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
+        db_create.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
             const departmentId =result[0].id;
-            db.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
+            db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
                 console.log(`'${userInput.roleName}' has been added to the database`);
                 startUp();
                });
@@ -215,12 +204,12 @@ async function addEmployee() {
         },
     ]);
 
-    db.query(`SELECT id FROM role_table WHERE title = ('${userInput.title}')`, (result) => {
+    db_create.query(`SELECT id FROM role_table WHERE title = ('${userInput.title}')`, (result) => {
         const roleId = result[0].id;
         
-        db.query(`SELECT id FROM employee_table WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
+        db_create.query(`SELECT id FROM employee_table WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
             const managerId = result[0].id;  
-            db.query(`INSERT INTO employee_table(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
+            db_create.query(`INSERT INTO employee_table(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
                 console.log(`Added '${userInput.firstName}' '${userInput.lastName}' to the database`);
                 startUp();
             });
@@ -250,13 +239,13 @@ async function updateEmployeeRole() {
         },        
     ]);
 
-    db.query(`SELECT id FROM role_table WHERE title = ('${userInput.roleName}')`, (result) => {
+    db_create.query(`SELECT id FROM role_table WHERE title = ('${userInput.roleName}')`, (result) => {
         const roleId = result[0].id;
         
-        db.query(`SELECT id FROM employee_table WHERE CONCAT(first_name, ' ', last_name) = ('${userInput.employeeName}')`, (result) => {
+        db_create.query(`SELECT id FROM employee_table WHERE CONCAT(first_name, ' ', last_name) = ('${userInput.employeeName}')`, (result) => {
             const employeeId = result[0].id;  
 
-            db.query(`UPDATE employee_table SET role_id = ? WHERE id =?`, [roleId, employeeId], (result) => {
+            db_create.query(`UPDATE employee_table SET role_id = ? WHERE id =?`, [roleId, employeeId], (result) => {
                 console.log(`Updated the role of '${userInput.employeeName}' to '${userInput.roleName}' in the database`);
                 startUp();
             });
@@ -265,22 +254,22 @@ async function updateEmployeeRole() {
 }
 
 function retrieveManagers() {
-    return db.promise().query(`SELECT CONCAT(first_name,' ', last_name) AS manager_name FROM employee_table WHERE manager_id IS NULL`);
+    return db_create.promise().query(`SELECT CONCAT(first_name,' ', last_name) AS manager_name FROM employee_table WHERE manager_id IS NULL`);
 }
 
 function retrieveDepartments() {
-    return db.promise().query(`SELECT department_name FROM department_table`);
+    return db_create.promise().query(`SELECT department_name FROM department_table`);
 }
 
 function retrieveEmployees() {
-    return db.promise().query(`SELECT CONCAT(first_name,' ',last_name) "employee_name" FROM employee_table`);
+    return db_create.promise().query(`SELECT CONCAT(first_name,' ',last_name) "employee_name" FROM employee_table`);
 }
 
 function retrieveRoles() {
-    return db.promise().query(`SELECT title FROM role_table`);
+    return db_create.promise().query(`SELECT title FROM role_table`);
 }
 
-startUp();
+//startUp();
 
 
 
