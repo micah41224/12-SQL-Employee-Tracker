@@ -79,7 +79,7 @@ function startUp(db_create) {
 };
 
 function viewAllDepartments() {
-    db_create.query("SELECT * FROM department_table", 
+    db_create.query("SELECT department_table.id 'ID', department_table.department_name 'Department Name' FROM department_table", 
     function (err, res) {
         if (err) throw err;
         console.table(res);
@@ -89,7 +89,7 @@ function viewAllDepartments() {
 
 
 function viewAllRoles() {
-    db_create.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM role_table JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+    db_create.query(`SELECT role_table.id "ID", role_table.title "Title", role_table.salary "Salary", department_table.department_name "Department Name" FROM role_table JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
         if (err) throw err;
         console.table(res);
         startUp();
