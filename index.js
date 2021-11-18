@@ -16,15 +16,6 @@ var db_create = mysql.createConnection({
     database: process.env.DB_DATABASE
 },
 
-// const db_create = mysql.createConnection({
-//     host: "localhost",
-//     port: 3306,
-//     user: "root",
-//     password: "mysql5200",
-//     database: "employee_db",
-//     connectTimeout: 300000
-// },
-
 console.log("It worked")
 );
 
@@ -105,7 +96,7 @@ function viewAllRoles() {
       });
 }
 
-// VERSION 5
+
 function viewAllEmployees() {
     db_create.query(`SELECT ee.id "ID", ee.first_name "First Name", ee.last_name "Last Name", r.title "Title", d.department_name "Department Name", r.salary "Salary",
 CASE when em.first_name is null then '' else CONCAT(em.first_name, " ", em.last_name) end AS Manager from employee_table ee
@@ -159,13 +150,13 @@ function addRole() {
             choices: dptList,
         }
     ]).then(function (userInput) {
-        console.log(userInput.departmentName);
+        //console.log(userInput.departmentName);
         var sql = 'SELECT id FROM department_table WHERE department_name = ?';
         var name = userInput.departmentName;
-        console.log(name);
+        //console.log(name);
         db_create.query(sql, [name], function (err, result) {
         if (err) throw err;
-            console.log(result);
+            //console.log(result);
             const departmentId =result[0].id;
         db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, 
             function (err, res)  {
@@ -178,41 +169,6 @@ function addRole() {
     })    
 }
 
-
-//VERSION 1
-// function addRole() {
-
-//     retrieveDepartments().then( ([rows, fields]) => {
-//          const dptList = rows.map(({ id, department_name }) => ({ name: department_name}));
-    
-//     inquirer.prompt([
-//         {
-//             name:"roleName",
-//             type:"input",
-//             message:"What is this role called?"
-//         },
-//         {
-//             name:"salaryAmount",
-//             type:"input",
-//             message:"What is the salary for this role?"
-//         },
-//         {
-//             name:"departmentName",
-//             type:"list",
-//             message:"What department does this role fall under?",
-//             choices: dptList,
-//         }
-//     ]).then(userInput => {
-//         db_create.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
-//             const departmentId =result[0].id;
-//             db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
-//                 console.log(`'${userInput.roleName}' has been added to the database`);
-//                 startUp();
-//                });
-//             };            
-//         });        
-//     })    
-// }
 
 async function addEmployee() {
     
@@ -253,12 +209,23 @@ async function addEmployee() {
             message: "Which manager should the employee be assigned?",
             choices: choicesManagerList,
         },
-    ]);
-
-    db_create.query(`SELECT id FROM role_table WHERE title = ('${userInput.title}')`, (result) => {
+    ]).then(function (userInput) {
+        //console.log(userInput.title);
+        var sql = 'SELECT id FROM role_table WHERE title = ?';
+        var name = userInput.title;
+        //console.log(name);
+        db_create.query(sql, [name], function (err, result) {
+            if (err) throw err;
+            //console.log(result);
         const roleId = result[0].id;
-        
-        db_create.query(`SELECT id FROM employee_table WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
+        var sql = 'SELECT id FROM employee_table WHERE first_name = ? AND last_name = ?';
+        var fname = userInput.managerName.split(' ')[0];
+        var lname = userInput.managerName.split(' ')[1];
+        //console.log('fname: '+ fname);
+        //console.log('lname: '+ lname);
+        db_create.query(sql, [fname,lname], function (err, result) {
+            if (err) throw err;
+            //console.log(result);
             const managerId = result[0].id;  
             db_create.query(`INSERT INTO employee_table(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
                 console.log(`Added '${userInput.firstName}' '${userInput.lastName}' to the database`);
@@ -266,7 +233,7 @@ async function addEmployee() {
             });
         });        
     });
-}
+})}
 
 async function updateEmployeeRole() {
     const employeeList = await retrieveEmployees();
@@ -288,12 +255,23 @@ async function updateEmployeeRole() {
             message: "Which role do you want to assign the selected employee?",
             choices: choicesRoleList,
         },        
-    ]);
-
-    db_create.query(`SELECT id FROM role_table WHERE title = ('${userInput.roleName}')`, (result) => {
+    ]).then(function(userInput) {
+//console.log(userInput.roleName);
+var sql = 'SELECT id FROM role_table WHERE title = ?';
+var role = userInput.roleName;
+//console.log(role);
+db_create.query(sql, [role], function(err, result) {
+    if (err) throw err;
+   //console.log(result);
         const roleId = result[0].id;
         
-        db_create.query(`SELECT id FROM employee_table WHERE CONCAT(first_name, ' ', last_name) = ('${userInput.employeeName}')`, (result) => {
+var sql = 'SELECT id FROM employee_table WHERE CONCAT(first_name, \' \', last_name) = ?';
+var eName =userInput.employeeName;
+//console.log(eName);
+db_create.query(sql, [eName], function(err, result){
+    if (err) throw err;
+   // console.log(result);
+
             const employeeId = result[0].id;  
 
             db_create.query(`UPDATE employee_table SET role_id = ? WHERE id =?`, [roleId, employeeId], (result) => {
@@ -302,7 +280,9 @@ async function updateEmployeeRole() {
             });
         });        
     });
+    })
 }
+
 
 function retrieveManagers() {
     return db_create.promise().query(`SELECT CONCAT(first_name,' ', last_name) AS manager_name FROM employee_table WHERE manager_id IS NULL`);

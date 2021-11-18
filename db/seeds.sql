@@ -12,7 +12,7 @@ VALUES
         ("Software Engineer", 60000, 3),
         ("Accountant", 50000, 2),
         ("Lead Researcher", 90000, 1),
-        ("Intern", 1, 4);
+        ("Intern", 30000, 4);
 
 INSERT INTO employee_table (first_name, last_name, role_id, manager_id)
 VALUES
