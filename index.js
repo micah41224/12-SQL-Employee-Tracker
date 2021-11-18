@@ -1,5 +1,5 @@
-// require('dotenv').config();
-// const dotEnv = require("dotenv").config();
+require('dotenv').config();
+const dotEnv = require("dotenv").config();
 const mysql = require("mysql2");
 const consoleTable =require("console.table");
 const inquirer = require("inquirer");
@@ -8,22 +8,22 @@ const inquirer = require("inquirer");
 const PORT = process.env.PORT || 3306;
 
 
-// var db_create = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     port: PORT,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASS,
-//     database: process.env.DB_DATABASE
-// },
-
-const db_create = mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    user: "root",
-    password: "mysql5200",
-    database: "employee_db",
-    connectTimeout: 300000
+var db_create = mysql.createConnection({
+    host: process.env.DB_HOST,
+    port: PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_DATABASE
 },
+
+// const db_create = mysql.createConnection({
+//     host: "localhost",
+//     port: 3306,
+//     user: "root",
+//     password: "mysql5200",
+//     database: "employee_db",
+//     connectTimeout: 300000
+// },
 
 console.log("It worked")
 );
@@ -98,18 +98,39 @@ function viewAllDepartments() {
 
 
 function viewAllRoles() {
-    db_create.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM roles JOIN department_table ON department_table.id = roles.department_id`, (rows) => {
-        console.table('\n', rows.slice(0));
+    db_create.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM role_table JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        startUp();
+      });
+}
+
+
+// function viewAllEmployees() {
+//     db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, employee_table.manager_id as manager_id FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+//         if (err) throw err;
+//         console.table(res);
+//         startUp();
+//     });
+// }
+
+// VERSION 3
+function viewAllEmployees() {
+    db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.manager_id, " ", employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+        if (err) throw err;
+        console.table(res);
         startUp();
     });
 }
 
-function viewAllEmployees() {
-    db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`), (rows) => {
-        console.table('\n', rows.slice(0));
-        startUp();
-    }
-}
+// VERSION 1
+// function viewAllEmployees() {
+//     db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+//         if (err) throw err;
+//         console.table(res);
+//         startUp();
+//     });
+// }
 
 function addDepartment() {
     inquirer.prompt([
@@ -119,10 +140,11 @@ function addDepartment() {
             message:"What is the department name?"
         }
     ]).then(userInput => {
-        db_create.query(`INSERT INTO department_table(department_name) VALUES("${userInput.department_name}")`), (result) => {
-            console.log(`"${userInput.department_name}" was added to the database`);
+        db_create.query(`INSERT INTO department_table(department_name) VALUES("${userInput.department_Name}")`, function (err, res) {
+            if (err) throw err;
+            console.log(`"${userInput.department_Name}" was added to the database`);
             startUp();
-        }
+        });
     })
     
 }
