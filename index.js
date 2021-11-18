@@ -1,22 +1,34 @@
-require('dotenv').config();
-const dotEnv = require("dotenv").config();
+// require('dotenv').config();
+// const dotEnv = require("dotenv").config();
 const mysql = require("mysql2");
 const CT =require("console.table");
 const inquirer = require("inquirer");
 const express = require("express");
 
+const PORT = process.env.PORT || 3306;
 
 const app = express();
 
-const PORT = process.env.PORT || 3306;
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// var db_create = mysql.createConnection({
+//     host: process.env.DB_HOST,
+//     port: PORT,
+//     user: process.env.DB_USER,
+//     password: process.env.DB_PASS,
+//     database: process.env.DB_DATABASE
+// },
 
 var db_create = mysql.createConnection({
-    host: process.env.DB_HOST,
-    port: PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_DATABASE
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "mysql5200",
+    database: "employee_db"
 },
+
+console.log("It worked")
 );
 
 db_create.connect((err) => {
@@ -24,30 +36,40 @@ db_create.connect((err) => {
          throw err;
     }
     console.log('Mysql Connected');
-    // console.log("connected as id " + connection.threadId + "\n");
-    // clear();
-// Insert main function
 });
+
+// look at this
+
+app.use((req, res) => {
+    res.status(404).end();
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+
+// end look at this
 
 function startUp () {
   inquirer.prompt([
     {
       type: "list",
       message: "Please select a task",
-      name: "mainMenu",
+      name: "mainmenu",
       choices: [
-          "View All Departments", 
+          "View all Departments", 
           "View all Roles", 
-          "View All Employees", 
+          "View all Employees", 
           "Add a Department", 
           "Add a Role", 
           "Add an Employee", 
           "Update an Employee Role", 
           "Exit" 
-        ],
+        ]
     }
 ]).then(userSelection => {
-    switch (userSelection.action) {
+    switch (userSelection.mainmenu) {
                 case "View all departments":
                     viewAllDepartments();
                     break;
@@ -76,8 +98,8 @@ function startUp () {
                     console.log("Error occured with user selection.");
                     break;
 }
-})
-;};
+});
+};
 
 function viewAllDepartments() {
     db.query(`SELECT * FROM department_table`, (rows) => {
@@ -87,7 +109,6 @@ function viewAllDepartments() {
 }
 
 function viewAllRoles() {
-    // Combined w3schools examples to frame this, needs checking
     db.query(`SELECT role_table.id, role_table.title, role_table.salary, department_table.department_name FROM roles JOIN department_table ON department_table.id = roles.department_id`, (rows) => {
         console.table('\n', rows.slice(0));
         startUp();
@@ -194,13 +215,49 @@ async function addEmployee() {
         },
     ]);
 
-    db.query(`SELECT id FROM roles WHERE title = ('${userInput.title}')`, (result) => {
+    db.query(`SELECT id FROM role_table WHERE title = ('${userInput.title}')`, (result) => {
         const roleId = result[0].id;
         
-        db.query(`SELECT id FROM employees WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
+        db.query(`SELECT id FROM employee_table WHERE first_name = ('${userInput.managerName.split(' ')[0]}') AND last_name = ('${userInput.managerName.split(' ')[1]}')`, (result) => {
             const managerId = result[0].id;  
-            db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
+            db.query(`INSERT INTO employee_table(first_name, last_name, role_id, manager_id) VALUES('${userInput.firstName}','${userInput.lastName}', '${roleId}', '${managerId}')`, (result) => {
                 console.log(`Added '${userInput.firstName}' '${userInput.lastName}' to the database`);
+                startUp();
+            });
+        });        
+    });
+}
+
+async function updateEmployeeRole() {
+    const employeeList = await retrieveEmployees();
+    const choicesEmployeeList = employeeList[0].map(({ employee_name }) => ({ name: employee_name}));
+    const roleList = await retrieveRoles();    
+    const choicesRoleList = roleList[0].map(({ title }) => ({ name: title}));
+
+    const userInput = await inquirer
+    .prompt([
+        {
+            type: "list",
+            name: "employeeName",
+            message: "Which employee's role do you want to update?",
+            choices: choicesEmployeeList,
+        },
+        {
+            type: "list",
+            name: "roleName",
+            message: "Which role do you want to assign the selected employee?",
+            choices: choicesRoleList,
+        },        
+    ]);
+
+    db.query(`SELECT id FROM role_table WHERE title = ('${userInput.roleName}')`, (result) => {
+        const roleId = result[0].id;
+        
+        db.query(`SELECT id FROM employee_table WHERE CONCAT(first_name, ' ', last_name) = ('${userInput.employeeName}')`, (result) => {
+            const employeeId = result[0].id;  
+
+            db.query(`UPDATE employee_table SET role_id = ? WHERE id =?`, [roleId, employeeId], (result) => {
+                console.log(`Updated the role of '${userInput.employeeName}' to '${userInput.roleName}' in the database`);
                 startUp();
             });
         });        
