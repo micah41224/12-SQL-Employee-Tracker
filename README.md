@@ -2,6 +2,8 @@
 
 ## Project Description:
 
+This week's homework assignment required that we code a command line application that helps a user keep track of the employee's in their company. The app must be able to print tables enabling the user to view all their employees, departments and the employee's roles. In addition to being able to view those categories the app must have the functionality to add a department, role and employee as well as allow the user to update an employee's role within the company.
+
 ## Technologies Used:
 
 HTML, CSS, Javascript, Node.js, Inquirer
@@ -14,11 +16,15 @@ https://github.com/micah41224/12-SQL-Employee-Tracker
 
 ### Screencastify Link:
 
+https://watch.screencastify.com/v/KQzd5NKcm63ggNTJAyXT
+
 ### Google Drive Link:
+
+https://drive.google.com/file/d/1HNrEw4MKIMI_48U4M1TSwx6EG3izyntN/view
 
 ## Screenshot of final page:
 
-![Completed Application Page](/assets/images/)
+![Completed Application Page](/assets/images/12-Employee-Tracker-Final-SS.png)
 
 ## License:
 
