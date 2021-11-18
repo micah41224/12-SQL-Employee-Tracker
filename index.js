@@ -105,32 +105,18 @@ function viewAllRoles() {
       });
 }
 
-
-// function viewAllEmployees() {
-//     db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, employee_table.manager_id as manager_id FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
-//         if (err) throw err;
-//         console.table(res);
-//         startUp();
-//     });
-// }
-
-// VERSION 3
+// VERSION 5
 function viewAllEmployees() {
-    db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.manager_id, " ", employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
+    db_create.query(`SELECT ee.id "ID", ee.first_name "First Name", ee.last_name "Last Name", r.title "Title", d.department_name "Department Name", r.salary "Salary",
+CASE when em.first_name is null then '' else CONCAT(em.first_name, " ", em.last_name) end AS Manager from employee_table ee
+LEFT JOIN employee_table em on ee.manager_id = em.id
+LEFT JOIN role_table r ON r.id = ee.role_id
+LEFT JOIN department_table d ON d.id = r.department_id`, function (err, res) {
         if (err) throw err;
         console.table(res);
         startUp();
     });
 }
-
-// VERSION 1
-// function viewAllEmployees() {
-//     db_create.query(`SELECT employee_table.id, employee_table.first_name, employee_table.last_name, role_table.title, department_table.department_name, role_table.salary, CONCAT(employee_table.first_name, " ", employee_table.last_name) AS Manager FROM employee_table LEFT JOIN role_table ON role_table.id = employee_table.role_id LEFT JOIN department_table ON department_table.id = role_table.department_id`, function (err, res) {
-//         if (err) throw err;
-//         console.table(res);
-//         startUp();
-//     });
-// }
 
 function addDepartment() {
     inquirer.prompt([
@@ -152,7 +138,7 @@ function addDepartment() {
 
 function addRole() {
 
-    getDepartments().then( ([rows, fields]) => {
+    retrieveDepartments().then( ([rows, fields]) => {
          const dptList = rows.map(({ id, department_name }) => ({ name: department_name}));
     
     inquirer.prompt([
@@ -172,18 +158,61 @@ function addRole() {
             message:"What department does this role fall under?",
             choices: dptList,
         }
-    ]).then(userInput => {
-        db_create.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
+    ]).then(function (userInput) {
+        console.log(userInput.departmentName);
+        var sql = 'SELECT id FROM department_table WHERE department_name = ?';
+        var name = userInput.departmentName;
+        console.log(name);
+        db_create.query(sql, [name], function (err, result) {
+        if (err) throw err;
+            console.log(result);
             const departmentId =result[0].id;
-            db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
+        db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, 
+            function (err, res)  {
+                if (err) throw err;
                 console.log(`'${userInput.roleName}' has been added to the database`);
                 startUp();
                });
-            };            
+            })            
         });        
     })    
 }
 
+
+//VERSION 1
+// function addRole() {
+
+//     retrieveDepartments().then( ([rows, fields]) => {
+//          const dptList = rows.map(({ id, department_name }) => ({ name: department_name}));
+    
+//     inquirer.prompt([
+//         {
+//             name:"roleName",
+//             type:"input",
+//             message:"What is this role called?"
+//         },
+//         {
+//             name:"salaryAmount",
+//             type:"input",
+//             message:"What is the salary for this role?"
+//         },
+//         {
+//             name:"departmentName",
+//             type:"list",
+//             message:"What department does this role fall under?",
+//             choices: dptList,
+//         }
+//     ]).then(userInput => {
+//         db_create.query(`SELECT id FROM department_table WHERE department_name = ('${userInput.departmentName})')`), (result) => {
+//             const departmentId =result[0].id;
+//             db_create.query(`INSERT INTO role_table(title, salary, department_id) VALUES('${userInput.roleName}','${userInput.salaryAmount}', '${departmentId}')`, (result) => {
+//                 console.log(`'${userInput.roleName}' has been added to the database`);
+//                 startUp();
+//                });
+//             };            
+//         });        
+//     })    
+// }
 
 async function addEmployee() {
     
